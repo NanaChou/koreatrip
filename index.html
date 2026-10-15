@@ -62,6 +62,7 @@ th{color:var(--mute);font-weight:500;font-size:12px}
 .foot{text-align:center;color:var(--mute);font-size:13px;margin-top:28px}
 .pic{display:block;width:100%;max-width:440px;margin:0 auto 4px;border:0;border-radius:0;box-shadow:none;-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 55%,transparent 100%)}
 @media (min-width:1001px){html,body{height:100%;overflow:hidden}.layout{height:100%;align-items:stretch;padding:0}.wrap{height:100%;overflow-y:auto;padding:0 20px 48px 16px}.wrap .hero{margin:0 -20px 0 -16px;border-radius:0 0 26px 26px}aside{position:static;height:100%;margin:0;padding:12px 16px 12px 0}}
+.route{font-size:13px;color:var(--mute);line-height:1.4}
 </style>
 </head>
 <body data-lang="zh">
@@ -171,27 +172,47 @@ th{color:var(--mute);font-weight:500;font-size:12px}
 </div>
 <aside>
 <div class="tabs" id="tabs">
-<button class="on" data-q="Incheon International Airport"><span class="zh">仁川機場</span><span class="en">Incheon Airport</span></button>
-<button data-q="Heredium, 735 Daejeon-ro, Dong-gu, Daejeon"><span class="zh">Heredium</span><span class="en">Heredium</span></button>
-<button data-q="Daejeon Station, South Korea"><span class="zh">大田車站</span><span class="en">Daejeon Stn</span></button>
-<button data-q="Anook Ryokan Hotel Eunpyeong Bulgwang, Seoul"><span class="zh">首爾住宿</span><span class="en">Seoul hotel</span></button>
-<button data-q="Gyeongbokgung Palace, Seoul"><span class="zh">景福宮</span><span class="en">Gyeongbokgung</span></button>
-<button data-q="Bukchon Hanok Village, Seoul"><span class="zh">北村</span><span class="en">Bukchon</span></button>
-<button data-q="Money Box Myeongdong Main Branch, Seoul"><span class="zh">明洞換錢</span><span class="en">Myeongdong</span></button>
+<button class="on">10/17</button><button>10/18</button><button>10/19</button><button>10/20</button><button>10/21</button>
 </div>
+<div class="route" id="route"></div>
 <iframe id="map" title="Google Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
 <div class="mlink"><a id="ml" target="_blank" rel="noopener"><span class="zh">在 Google 地圖開啟 ↗</span><span class="en">Open in Google Maps ↗</span></a></div>
 </aside>
 </div>
 <script>
-(function(){var f=document.getElementById('map'),l=document.getElementById('ml'),b=document.querySelectorAll('#tabs button');
-function go(q){var e=encodeURIComponent(q);f.src='https://www.google.com/maps?q='+e+'&output=embed';l.href='https://www.google.com/maps/search/?api=1&query='+e;}
-b.forEach(function(x){x.onclick=function(){b.forEach(function(y){y.classList.remove('on')});x.classList.add('on');go(x.dataset.q);};});
-var days=document.querySelectorAll('.card.day'),qs=['Incheon International Airport','Heredium, 735 Daejeon-ro, Dong-gu, Daejeon','Money Box Myeongdong Main Branch, Seoul','Bukchon Hanok Village, Seoul','Gyeongbokgung Palace, Seoul'];
-function pick(q){b.forEach(function(x){if(x.dataset.q===q)x.click();});}
-days.forEach(function(d,i){d.onclick=function(e){if(e.target.closest('a'))return;var open=d.classList.contains('open');if(open&&!e.target.closest('h3,.date'))return;days.forEach(function(x){x.classList.remove('open')});if(!open){d.classList.add('open');pick(qs[i]);}};});
-if(days[0])days[0].classList.add('open');
-go(b[0].dataset.q);})();
+(function(){
+var ICN={q:'Incheon International Airport',zh:'仁川機場',en:'Incheon Airport'},
+SEL={q:'Seoul Station',zh:'首爾站（示意起點）',en:'Seoul Stn (assumed start)'},
+DJS={q:'Daejeon Station, South Korea',zh:'大田車站',en:'Daejeon Stn'},
+HER={q:'Heredium, 735 Daejeon-ro, Dong-gu, Daejeon',zh:'Heredium',en:'Heredium'},
+MD={q:'Money Box Myeongdong Main Branch, Seoul',zh:'明洞換錢',en:'Myeongdong'},
+HTL={q:'Anook Ryokan Hotel Eunpyeong Bulgwang, Seoul',zh:'佛光住宿',en:'Bulgwang hotel'},
+BK={q:'Bukchon Hanok Village, Seoul',zh:'北村',en:'Bukchon'},
+GB={q:'Gyeongbokgung Palace, Seoul',zh:'景福宮',en:'Gyeongbokgung'};
+var R=[[ICN],[SEL,DJS,HER],[DJS,MD,HTL],[HTL,BK],[HTL,GB,ICN]];
+var f=document.getElementById('map'),l=document.getElementById('ml'),rt=document.getElementById('route'),
+tabs=document.querySelectorAll('#tabs button'),days=document.querySelectorAll('.card.day'),e=encodeURIComponent;
+function show(i){
+var st=R[i];
+tabs.forEach(function(x,j){x.classList.toggle('on',j===i);});
+days.forEach(function(d,j){d.classList.toggle('open',j===i);});
+if(st.length===1){
+f.src='https://www.google.com/maps?q='+e(st[0].q)+'&z=11&output=embed';
+l.href='https://www.google.com/maps/search/?api=1&query='+e(st[0].q);
+}else{
+f.src='https://www.google.com/maps?saddr='+e(st[0].q)+'&daddr='+st.slice(1).map(function(x){return e(x.q);}).join('+to:')+'&dirflg=r&output=embed';
+var mid=st.slice(1,-1).map(function(x){return e(x.q);}).join('%7C');
+l.href='https://www.google.com/maps/dir/?api=1&origin='+e(st[0].q)+'&destination='+e(st[st.length-1].q)+(mid?'&waypoints='+mid:'')+'&travelmode=transit';
+}
+rt.innerHTML=st.map(function(x){return '<span class="zh">'+x.zh+'</span><span class="en">'+x.en+'</span>';}).join(' ➜ ');
+}
+tabs.forEach(function(x,i){x.onclick=function(){show(i);};});
+days.forEach(function(d,i){d.onclick=function(ev){
+if(ev.target.closest('a'))return;
+if(d.classList.contains('open')){if(ev.target.closest('h3,.date'))d.classList.remove('open');return;}
+show(i);};});
+show(0);
+})();
 </script>
 </body>
 </html>
